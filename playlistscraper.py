@@ -27,18 +27,19 @@ def get_playlist_data(playlist_id, headers):
     name = playlist_json['name']
     playlist_tracks = playlist_json['tracks']['items']
     tracks = [track['track']['name'] for track in playlist_tracks if track['track']]
+    artists = [track['track']['artists'][0]['name'] for track in playlist_tracks if track['track']]
     ids = [track['track']['id'] for track in playlist_tracks if track['track']]
 
-    return name, tracks, ids
+    return name, tracks, artists, ids
 
 def get_playlist_df(query, headers, limit=50):
     playlist_ids = get_playlist_ids(query, headers, limit)
 
     playlist_data = []
     for id in playlist_ids:
-        name, tracks, track_ids = get_playlist_data(id, headers)
-        playlist_data.append((id, name, tracks, track_ids))
+        name, tracks, artists, track_ids = get_playlist_data(id, headers)
+        playlist_data.append((id, name, tracks, artists, track_ids))
 
     df = pd.DataFrame(playlist_data)
-    df.columns = ["Playlist_ID", "Playlist_Name", "Playlist_Songs", "Playlist_Song_IDs"]
+    df.columns = ["Playlist_ID", "Playlist_Name", "Playlist_Songs", "Playlist_Artists", "Playlist_Song_IDs"]
     return df
