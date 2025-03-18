@@ -1,6 +1,7 @@
 import requests
 import json
 from bs4 import BeautifulSoup
+import re
 
 
 def grab_playlist_tracks(playlist_id, headers):
@@ -15,25 +16,45 @@ def grab_playlist_tracks(playlist_id, headers):
 
     return tracks
 
-def get_genius_url(song_title, artist, genius_token):
+
+def get_genius_url(song_title, artist, genius_token, verbose=False):
+    if "instrumental" in song_title.lower():
+        return None
+    if verbose:
+        print(f"Searching for: {song_title} by {artist}")
     BASE_URL = "https://api.genius.com"
-    search_url = f"{BASE_URL}/search"
     headers = {"Authorization": f"Bearer {genius_token}"}
-    params = {"q": f"{song_title} {artist}"}
+    cleaned = re.sub(r"\s*[\(\[].*?[\)\]]|\s*-\s*.*", "", song_title)
+    # Create search variants
+    search_variants = [
+        song_title,
+        cleaned,
+        f"{artist} {cleaned}",
+        f"{cleaned} {artist}",
+        f"{song_title} {artist}",
+        f"{artist} {song_title}"
+    ]
 
-    response = requests.get(search_url, headers=headers, params=params)
+    for query in list(set(search_variants)):
+        params = {"q": query}
+        response = requests.get(f"{BASE_URL}/search", headers=headers, params=params)
+        if not response.status_code == 200:
+            print(response.status_code)
+        data = response.json()
 
-    data = response.json()
+        if data["response"]["hits"]:
+            top_result = data["response"]["hits"][0]["result"]
 
-    if data["response"]["hits"]:
-        song_path = data["response"]["hits"][0]["result"]["path"]
-        song_url = f"https://genius.com{song_path}"
-    else:
-        print("No songs found")
-        song_url = None
-    return song_url
+            # Check if the matched song is by the correct artist
+            genius_artist = top_result["primary_artist"]["name"].lower()
+            if artist.lower() in genius_artist:
+                return f"https://genius.com{top_result['path']}"  # Return first valid match
 
-def scrape_lyrics(genius_url):
+    print(f"No valid match found for: {song_title} by {artist}")
+    return None
+
+
+def scrape_lyrics(genius_url, verbose=False):
     headers = {
         "User-Agent": "Mozilla/5.0",
     }
@@ -43,8 +64,8 @@ def scrape_lyrics(genius_url):
     if response.status_code != 200:
         print("Error: Unable to fetch the page")
         return None
-
-    print(f"Fetching lyrics from: {genius_url}")
+    if verbose:
+        print(f"Fetching lyrics from: {genius_url}")
     soup = BeautifulSoup(response.text, "html.parser")
 
     lyrics_divs = soup.find_all("div", attrs={"data-lyrics-container": "true"})
@@ -53,4 +74,3 @@ def scrape_lyrics(genius_url):
     lyrics = "\n".join([div.get_text(separator="\n") for div in lyrics_divs])
 
     return lyrics.strip()
-
