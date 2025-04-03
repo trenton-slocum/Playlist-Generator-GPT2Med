@@ -151,7 +151,7 @@ def scrape_lyrics(genius_url, verbose=False, max_retries=5):
 
         if lyrics.strip():
             # Add a random delay before next request
-            time.sleep(random.uniform(2, 5))
+            time.sleep(random.uniform(1, 3))
             return lyrics.strip()
 
         return "Lyrics not found"
