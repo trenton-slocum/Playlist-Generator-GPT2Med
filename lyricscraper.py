@@ -44,11 +44,19 @@ def get_genius_url(song_title, artist, genius_token, verbose=False, max_retries=
     song_title = normalize_text(song_title)
     artist = normalize_text(artist)
 
-    if "instrumental" in song_title.lower():
+    skips = [
+        'instrumental',
+        'cover',
+        'lullaby version',
+        'lofi',
+        'lo fi',
+        'hz'
+    ]
+    if any(x in song_title.lower() for x in skips):
+        print(f"No valid match found for: {song_title} by {artist}")
         return None
     if verbose:
         print(f"Searching for: {song_title} by {artist}")
-
     base_url = "https://api.genius.com"
     session = requests.Session()
 
@@ -68,6 +76,9 @@ def get_genius_url(song_title, artist, genius_token, verbose=False, max_retries=
         print("Search Variants: ", search_variants)
     retries = 0
     while retries < max_retries:
+        time.sleep(1)
+        if retries > 0:
+            print(f"Retry {retries}")
         headers = {
             "Authorization": f"Bearer {genius_token}",
             "User-Agent": random.choice(USER_AGENTS)  # Rotate user-agents
@@ -97,11 +108,24 @@ def get_genius_url(song_title, artist, genius_token, verbose=False, max_retries=
             if data["response"]["hits"]:
                 for result in data["response"]["hits"]:
                     genius_artist = normalize_text(result["result"]["primary_artist"]["name"])
-                    if artist.lower() in genius_artist:
+                    genius_title = normalize_text(result["result"]["title"])
+                    lyric_state = result["result"]["lyrics_state"]
+                    if (artist.lower() in genius_artist) and (cleaned.lower() in genius_title):
+                        if lyric_state == 'unreleased':
+                            print(f"No valid match found for: {song_title} by {artist}")
+                            return None
                         return f"https://genius.com{result['result']['path']}"
-                    elif artist.lower() in [normalize_text(x['name']) for x in result["result"]["primary_artists"]]:
+                    elif (artist.lower() in [normalize_text(x['name']) for x in result["result"]["primary_artists"]]
+                          and (cleaned.lower() in genius_title)):
+                        if lyric_state == 'unreleased':
+                            print(f"No valid match found for: {song_title} by {artist}")
+                            return None
                         return f"https://genius.com{result['result']['path']}"
-                    elif artist.lower() in [normalize_text(x['name']) for x in result["result"]["featured_artists"]]:
+                    elif (artist.lower() in [normalize_text(x['name']) for x in result["result"]["featured_artists"]]
+                          and (cleaned.lower() in genius_title)):
+                        if lyric_state == 'unreleased':
+                            print(f"No valid match found for: {song_title} by {artist}")
+                            return None
                         return f"https://genius.com{result['result']['path']}"
 
         print(f"No valid match found for: {song_title} by {artist}")
@@ -145,15 +169,14 @@ def scrape_lyrics(genius_url, verbose=False, max_retries=5):
         lyrics_divs = soup.find_all("div", attrs={"data-lyrics-container": "true"})
 
         # Extract text from all matching divs
-        lyrics = "\n".join([div.get_text(separator="\n") for div in lyrics_divs])
-        lyrics = re.sub(r'^.*?Lyrics\n', '', lyrics, flags=re.S)
-        lyrics = re.sub(r'^.*?Read More\n\xa0\n', '', lyrics, flags=re.S)
-
+        lyrics = "\n".join([div.get_text(separator="\n").strip() for div in lyrics_divs])
+        lyrics = re.sub(r'^.*?Lyrics\n', '', lyrics, flags=re.S).strip()
+        lyrics = re.sub(r'^.*?Read More\n\xa0\n', '', lyrics, flags=re.S).strip()
+        before, sep, after = lyrics.partition("[")
+        lyrics = sep + after if sep else before
         if lyrics.strip():
-            # Add a random delay before next request
-            time.sleep(random.uniform(1, 3))
             return lyrics.strip()
-
+        print('no lyrics found for: ', genius_url)
         return "Lyrics not found"
 
     print("Max retries reached. Skipping this song.")
