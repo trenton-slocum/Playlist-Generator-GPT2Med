@@ -114,4 +114,8 @@ venv.bak/
 # mkdocs documentation
 /site
 
+<<<<<<< Updated upstream
 .DS_Store
+=======
+Models
+>>>>>>> Stashed changes
