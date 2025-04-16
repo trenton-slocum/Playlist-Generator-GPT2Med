@@ -1,5 +1,3 @@
-<!-- generator/templates/generator/index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,10 +8,47 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #121212;
             color: #ffffff;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            background-color: #1f1f1f;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            color: #87BBE4;
+            margin-bottom: 16px;
+        }
+
+        .prompt-link {
+            display: block;
+            background-color: #2a2a2a;
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: background-color 0.2s ease;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+
+        .prompt-link:hover {
+            background-color: #333;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 40px;
         }
 
         h1 {
@@ -48,7 +83,7 @@
         }
 
         button:hover {
-            background-color: #87BBE4;
+            background-color: #6fa8d6;
         }
 
         table {
@@ -75,9 +110,29 @@
         tr:hover {
             background-color: #333;
         }
+
+        a {
+            color: #87BBE4;
+        }
     </style>
 </head>
 <body>
+<div class="sidebar">
+    <h2>Previous Prompts</h2>
+    {% if previous_prompts %}
+    <form method="post">
+    {% csrf_token %}
+    {% for prompt, tracks in previous_prompts.items %}
+        <button type="submit" name="prompt" value="{{ prompt }}" class="prompt-link">{{ prompt }}</button>
+    {% endfor %}
+</form>
+
+    {% else %}
+    <p style="color:#999;">No previous searches yet.</p>
+    {% endif %}
+</div>
+
+<div class="main-content">
     <h1>Enter a prompt for your playlist</h1>
     <form method="post">
         {% csrf_token %}
@@ -86,13 +141,22 @@
     </form>
 
     {% if tracks %}
-        <h2>Generated Playlist</h2>
-        <table>
-            <tr><th>Track</th><th>Artist</th><th>Spotify URL</th></tr>
-            {% for track in tracks %}
-                <tr><td>{{ track.title }}</td><td>{{ track.artist }}</td><td>{{ track.url }}</td></tr>
-            {% endfor %}
-        </table>
+    <h2>{{ prompt }}</h2>
+    <table>
+        <tr>
+            <th>Track</th>
+            <th>Artist</th>
+            <th>Spotify URL</th>
+        </tr>
+        {% for track in tracks %}
+        <tr>
+            <td>{{ track.title }}</td>
+            <td>{{ track.artist }}</td>
+            <td><a href="{{ track.url }}" target="_blank">{{ track.url }}</a></td>
+        </tr>
+        {% endfor %}
+    </table>
     {% endif %}
+</div>
 </body>
 </html>
