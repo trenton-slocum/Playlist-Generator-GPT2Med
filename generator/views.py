@@ -1,6 +1,7 @@
 from django.shortcuts import render
 import pandas as pd
 import Model as model
+from django.shortcuts import redirect
 
 song_data = pd.read_csv('song_data.csv')
 song_data.set_index('Song_ID', inplace=True)
@@ -57,7 +58,9 @@ def index(request):
             'previous_prompts': dict(reversed(list(previous_prompts.items())))
         })
 
-
+def reset_history(request):
+    request.session.flush()
+    return redirect('index')
 
 def song_id_lookup(output):
     songs = output.split('\n')

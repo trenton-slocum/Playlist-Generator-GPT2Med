@@ -19,6 +19,7 @@
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
             height: 100vh;
             overflow-y: auto;
+            position: fixed;
         }
 
         .sidebar h2 {
@@ -45,10 +46,10 @@
 
         .main-content {
             flex: 1;
-            padding: 40px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin-left: 250px;
         }
 
         h1 {
@@ -126,7 +127,10 @@
         <button type="submit" name="prompt" value="{{ prompt }}" class="prompt-link">{{ prompt }}</button>
     {% endfor %}
 </form>
-
+    <form action="{% url 'reset_history' %}" method="post" style="margin-top: 1em;">
+    {% csrf_token %}
+    <button type="submit" >Clear History</button>
+</form>
     {% else %}
     <p style="color:#999;">No previous searches yet.</p>
     {% endif %}
