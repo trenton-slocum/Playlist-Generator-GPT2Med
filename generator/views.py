@@ -41,6 +41,7 @@ def index(request):
         prompt = request.POST.get('prompt', '')
 
         if prompt and prompt not in previous_prompts:
+
             output = model.generate_playlist(prompt)
             tracks = song_id_lookup(output)
             previous_prompts[prompt] = tracks
@@ -65,7 +66,7 @@ def reset_history(request):
 def song_id_lookup(output):
     songs = output.split('\n')
     songs_clean = [song.split(' -')[0] for song in songs]
-    songs_clean = [song.split(' : ')[0] for song in songs]
+    songs_clean = [song.split(' : ')[0] for song in songs_clean]
     songs_clean = list(set(songs_clean))
 
     tracks = []

@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <title>Playlist Generator</title>
     <style>
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #121212;
@@ -122,15 +138,15 @@
     <h2>Previous Prompts</h2>
     {% if previous_prompts %}
     <form method="post">
-    {% csrf_token %}
-    {% for prompt, tracks in previous_prompts.items %}
+        {% csrf_token %}
+        {% for prompt, tracks in previous_prompts.items %}
         <button type="submit" name="prompt" value="{{ prompt }}" class="prompt-link">{{ prompt }}</button>
-    {% endfor %}
-</form>
+        {% endfor %}
+    </form>
     <form action="{% url 'reset_history' %}" method="post" style="margin-top: 1em;">
-    {% csrf_token %}
-    <button type="submit" >Clear History</button>
-</form>
+        {% csrf_token %}
+        <button type="submit">Clear History</button>
+    </form>
     {% else %}
     <p style="color:#999;">No previous searches yet.</p>
     {% endif %}
@@ -138,10 +154,12 @@
 
 <div class="main-content">
     <h1>Enter a prompt for your playlist</h1>
-    <form method="post">
+    <form id="playlist-form">
         {% csrf_token %}
-        <input type="text" name="prompt" placeholder="Chill vibes with saxophone..." required>
-        <button type="submit">Generate</button>
+        <input type="text" name="prompt" id="prompt-input" placeholder="Chill vibes with saxophone..." required>
+        <button type="submit" id="submit">Generate</button>
+        <div id="loading" class="spinner" style="display: none;"></div>
+        <div id="result"></div>
     </form>
 
     {% if tracks %}
@@ -162,5 +180,51 @@
     </table>
     {% endif %}
 </div>
+
+<script>
+    // CSRF helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let cookie of cookies) {
+                const trimmed = cookie.trim();
+                if (trimmed.startsWith(name + "=")) {
+                    cookieValue = decodeURIComponent(trimmed.slice(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // AJAX form submission
+    document.getElementById('playlist-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const prompt = document.getElementById('prompt-input').value;
+        const csrfToken = getCookie('csrftoken');
+        document.getElementById('loading').style.display = 'block';
+
+        fetch("/", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({ prompt: prompt })
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.open();
+            document.write(html);
+            document.close();
+        })
+        .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            alert("Something went wrong.");
+        });
+    });
+</script>
+
 </body>
 </html>
