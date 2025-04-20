@@ -6,34 +6,6 @@ from django.shortcuts import redirect
 song_data = pd.read_csv('song_data.csv')
 song_data.set_index('Song_ID', inplace=True)
 
-output = """Crazy Little Thing Called Love - Remastered 2009
-I Wanna Dance with Somebody (Who Loves Me)
-Stayin Alive - From "Saturday Night Fever" Soundtrack
-Super Freak
-Billie Jean
-Jump - 2015 Remaster
-September
-Billie Jean
-Uptown Girl
-Dancing Queen
-Bohemian Rhapsody - Remastered 2011
-We Built This City
-Girls Just Want to Have Fun
-Let's Groove
-More Than a Feeling
-Born in the U.S.A.
-Dancing Queen
-Wake Me Up Before You Go-Go
-Let's Groove - Sped Up
-More Than A Feeling - 12" Version
-Grease - From “Grease”
-Girls Just Want to Have Fun
-Kung Fu Fighting
-I Can't Help Myself (Sugar Pie, Honey Bunch)
-Don't Stop Believin'
-Crocodile"""
-
-
 def index(request):
     prompt = ''
     previous_prompts = request.session.get('previous_prompts', {})
