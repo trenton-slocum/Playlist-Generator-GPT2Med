@@ -3,8 +3,8 @@ from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 
 ## Import Saved Model and use with generate_playlist function
-model = GPT2LMHeadModel.from_pretrained("./models/gpt2_Combined_Song_Artists", local_files_only = True)
-tokenizer = GPT2Tokenizer.from_pretrained("./models/gpt2_Combined_Song_Artists", local_files_only = True)
+model = GPT2LMHeadModel.from_pretrained("./Models/gpt2_Combined_Song_Artists", local_files_only = True)
+tokenizer = GPT2Tokenizer.from_pretrained("./Models/gpt2_Combined_Song_Artists", local_files_only = True)
 
 tokenizer.pad_token = tokenizer.eos_token
 
