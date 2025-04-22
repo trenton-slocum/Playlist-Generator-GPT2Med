@@ -42,7 +42,7 @@ tokenized_dataset = dataset.map(tokenize, batched=True)
 tokenized_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
 
 training_args = TrainingArguments(
-    output_dir="./models/gpt2_Combined_Song_Artists_Checkpoints",
+    output_dir="./Models/gpt2_Combined_Song_Artists_Checkpoints",
     overwrite_output_dir=True,
     num_train_epochs=30,
     per_device_train_batch_size=2,
@@ -61,5 +61,5 @@ trainer = Trainer(
 
 trainer.train()
 
-model.save_pretrained("./models/gpt2_Combined_Song_Artists")
-tokenizer.save_pretrained("./models/gpt2_Combined_Song_Artists")
+model.save_pretrained("./Models/gpt2_Combined_Song_Artists")
+tokenizer.save_pretrained("./Models/gpt2_Combined_Song_Artists")
