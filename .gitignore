@@ -114,6 +114,9 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Ignore csv files
+/data
+
 <<<<<<< Updated upstream
 .DS_Store
 =======
