@@ -1,6 +1,6 @@
 from django.shortcuts import render
 import pandas as pd
-import Model as model
+import models.Model as model
 from django.shortcuts import redirect
 
 song_data = pd.read_csv('song_data.csv')
