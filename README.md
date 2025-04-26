@@ -13,7 +13,9 @@ Project link: https://github.com/jamessiegener/DS6051-Project/
 ## Repository Roadmap
 
 📂 **data_collection/** — Scripts for playlist and lyric scraping using Spotify/Genius API 
+
 📂 **generator/ and playlist_generator/** — Front end files and scripts 
+
 📂 **model_tuning/** — Jupyter notebooks for model training and tuning
 
 
