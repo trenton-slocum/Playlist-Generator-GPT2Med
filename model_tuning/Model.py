@@ -8,7 +8,8 @@ tokenizer = GPT2Tokenizer.from_pretrained("./Models/gpt2_Combined_Song_Artists",
 
 tokenizer.pad_token = tokenizer.eos_token
 
-device = torch.device('cpu')
+device = 'mps' # change to 'cuda' if using GPU, 'cpu' if using CPU
+
 model.to(device)
 
 
@@ -20,7 +21,7 @@ def generate_playlist(prompt, max_length=200):
     attention_mask = encoded["attention_mask"].to(model.device)
 
     output = model.generate(
-        input_ids = input_ids.to('cpu'),
+        input_ids = input_ids.to(device),
         attention_mask=attention_mask,
         max_length=max_length,
         temperature= 2.0,
