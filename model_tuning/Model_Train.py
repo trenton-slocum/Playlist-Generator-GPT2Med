@@ -7,7 +7,7 @@ import os
 import csv
 import torch
 
-df = pd.read_csv('../Additional Data/Combined_Songs_Artists.csv')
+df = pd.read_csv('../Additional Data/Combined_Songs_Artists.csv') ## Use the correct path to your CSV file
 
 df["Playlist_Songs"] = df["Playlist_Songs"].apply(lambda x: ast.literal_eval(x) if isinstance(x, str) else x)
 
@@ -41,24 +41,40 @@ def tokenize(batch):
 tokenized_dataset = dataset.map(tokenize, batched=True)
 tokenized_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
 
+# Split the dataset into training and evaluation sets
+# The dataset is split into 90% training and 10% evaluation
+split_dataset = tokenized_dataset.train_test_split(test_size=0.1)
+train_dataset = split_dataset["train"]
+eval_dataset = split_dataset["test"]
+
+# Define the training arguments
 training_args = TrainingArguments(
-    output_dir="./Models/gpt2_Combined_Song_Artists_Checkpoints",
+    output_dir="./Models/gpt2_Combined_Song_Artists_Eval_Checkpoints",
     overwrite_output_dir=True,
-    num_train_epochs=30,
+    eval_strategy='steps',
+    eval_steps=100,
+    num_train_epochs=20,
     per_device_train_batch_size=2,
     save_steps=500,
     save_total_limit=2,
     logging_dir="./logs",
     logging_steps=50,
-    fp16=True if torch.cuda.is_available() else False
+    fp16=True if torch.cuda.is_available() else False,
+    load_best_model_at_end=True,
+    metric_for_best_model='loss',
+    greater_is_better=False
+    
 )
 
+# Initialize the Trainer
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=tokenized_dataset
+    train_dataset=train_dataset,
+    eval_dataset=eval_dataset,
 )
 
+# Train the model
 trainer.train()
 
 model.save_pretrained("./Models/gpt2_Combined_Song_Artists")
